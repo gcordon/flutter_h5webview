@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart'; // https://github.com/nslogx/flutter_easyloading/blob/develop/README-zh_CN.md
 
 void main() {
   runApp(const MyApp());
@@ -30,11 +30,12 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           title: 'First Method',
           // You can use the library anywhere in the app even in theme
-          theme: ThemeData(
-            primarySwatch: Colors.blue,
-            textTheme: Typography.englishLike2018.apply(fontSizeFactor: 1.sp),
-          ),
+          // theme: ThemeData(
+          //   primarySwatch: Colors.blue,
+          //   textTheme: Typography.englishLike2018.apply(fontSizeFactor: 1.sp),
+          // ),
           home: child,
+          builder: EasyLoading.init(),
         );
       },
       child: const MyHomePage(title: ''),
@@ -52,8 +53,187 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int counter = 0;
+  TextEditingController dialogTextFieldController = TextEditingController();
+  @override
+  void initState() {
+    // 因为 EasyLoading 是一个全局单例, 所以你可以在任意一个地方自定义它的样式:
+    EasyLoading.instance
+      ..displayDuration = const Duration(milliseconds: 1500)
+      ..indicatorType = EasyLoadingIndicatorType.fadingCircle
+      ..loadingStyle = EasyLoadingStyle.dark
+      ..indicatorSize = 45.0
+      ..radius = 10.0
+      ..progressColor = Colors.yellow
+      ..backgroundColor = Colors.green
+      ..indicatorColor = Colors.yellow
+      ..textColor = Colors.yellow
+      ..maskColor = Colors.blue.withOpacity(0.5)
+      ..userInteractions = true
+      ..dismissOnTap = false;
+    // ..customAnimation = CustomAnimation();
 
+    EasyLoading.showSuccess('Great Success!');
+
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Stack(children: [
+            AlertDialog(
+              backgroundColor: const Color.fromARGB(255, 250, 250, 250),
+              alignment: Alignment.topCenter,
+              // 最外层间距
+              insetPadding:
+                  // EdgeInsets.symmetric(horizontal: 16.r, vertical: 137.r),
+                  // EdgeInsets.symmetric(horizontal: 16.r, ),
+                  EdgeInsets.only(
+                left: 16.r,
+                right: 16.r,
+                top: 137.r,
+                bottom: 0.r,
+              ),
+              // 圆角
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30.r),
+              ),
+              titlePadding:
+                  EdgeInsets.symmetric(horizontal: 16.r, vertical: 30.r),
+              title: const Text('提交作品链接\n获得抽奖机会 '),
+              titleTextStyle: TextStyle(
+                fontSize: 28.sp,
+                fontWeight: FontWeight.bold,
+                color: const Color.fromRGBO(23, 27, 61, 1),
+              ),
+
+              // 主内容间距
+              contentPadding: EdgeInsets.symmetric(
+                vertical: 0.r,
+                horizontal: 24.r,
+              ),
+              contentTextStyle: TextStyle(
+                color: const Color.fromRGBO(23, 27, 61, 1),
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w400,
+              ),
+              // 主内容
+              content: Container(
+                // constraints: const BoxConstraints(minHeight: 200),
+                child: SingleChildScrollView(
+                  child: SizedBox(
+                    width: double.maxFinite, // 将内容的宽度设置为最大
+                    // height: double.maxFinite, // 将内容的宽度设置为最大
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start, // 水平偏左
+                      // mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const DialogTextTip(
+                          title: '第一步',
+                          c1: '创建',
+                          c2: '自定义主题',
+                          c3: '，并将主题安装到桌面',
+                        ),
+                        SizedBox(
+                          height: 18.r,
+                        ),
+                        const DialogTextTip(
+                          title: '第二步',
+                          c1: '截图或者路平发布',
+                          c2: '小红书',
+                          c3: '后,讲作品链接粘贴到下方并点击提交。',
+                        ),
+                        SizedBox(
+                          height: 42.r,
+                        ),
+                        // 输入框
+                        TextField(
+                          controller: dialogTextFieldController, // 控制器，获取输入的值
+                          autofocus: false,
+                          enableSuggestions: false, // 输入建议
+                          // onChanged
+                          // onSubmitted
+                          // 内容样式
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w400,
+                          ),
+                          decoration: InputDecoration(
+                            // labelText: '请输入发布的作品链接',
+                            labelStyle: const TextStyle(
+                              color: Color(0xFF2E2E2E),
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12.r),
+                              borderSide: BorderSide.none, // 不要边框
+                            ),
+                            filled: true, // 如果要设置背景这个要设置为true
+                            fillColor: Colors.black12, // 背景颜色
+                            //  内容距离外部
+                            contentPadding: EdgeInsets.symmetric(
+                              vertical: 14.r, // 上下距离
+                              horizontal: 16.r, // 左右距离
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              actions: [
+                // FilledButton(
+                //   onPressed: () {
+                //     Navigator.of(context).pop();
+                //   },
+                //   child: const Text('OK'),
+                // ),
+                GestureDetector(
+                  onTap: () {
+                    print('点击提交链接');
+                  },
+                  child: Container(
+                    width: 217.sp,
+                    height: 55.sp,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color.fromRGBO(255, 62, 0, 1),
+                          Color.fromRGBO(255, 93, 175, 1),
+                        ], // 渐变色的颜色列表
+                        begin: Alignment.centerLeft, // 渐变的起始位置
+                        end: Alignment.centerRight, // 渐变的结束位置
+                      ),
+                      border:
+                          Border.all(color: Colors.transparent), // 去除默认div边框
+                      borderRadius: const BorderRadius.all(
+                        Radius.circular(27.0),
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        '提交',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20.sp,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+              actionsAlignment: MainAxisAlignment.center,
+              actionsPadding:
+                  EdgeInsets.symmetric(horizontal: 0.r, vertical: 34.r),
+            ),
+          ]);
+        },
+      );
+    });
+  }
+
+  int counter = 0;
   void incrementCounter() {
     setState(() {
       counter++;
@@ -109,10 +289,10 @@ class _MyHomePageState extends State<MyHomePage> {
               decoration: BoxDecoration(
                 color: const Color.fromRGBO(0, 0, 0, 0.2),
                 border: Border.all(color: Colors.transparent), // 去除默认div边框
-                borderRadius: const BorderRadius.only(
+                borderRadius: BorderRadius.only(
                   // 添加圆角
-                  topLeft: Radius.circular(17.0),
-                  bottomLeft: Radius.circular(17.0),
+                  topLeft: Radius.circular(17.r),
+                  bottomLeft: Radius.circular(17.r),
                 ),
               ),
               child: Text(
@@ -149,8 +329,9 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Column(
                 children: [
                   SizedBox(
-                    // 因为是全面屏了，所以需要减去距离顶部的高度
+                    // 因为是全面屏了，所以需要e减去距离顶部的高度
                     height: appBarHeight + safeAreaHeight,
+                    // height: ScreenUtil().statusBarHeight,
                   ),
                   //
                   //
@@ -173,12 +354,12 @@ class _MyHomePageState extends State<MyHomePage> {
                         fit: BoxFit.fill,
                       ),
                       borderRadius: BorderRadius.circular(
-                        30.sp,
+                        30.r,
                       ),
                     ),
                     child: Padding(
                       padding: EdgeInsets.all(
-                        12.sp,
+                        12.r,
                       ),
                       child: Row(
                         children: [
@@ -192,15 +373,19 @@ class _MyHomePageState extends State<MyHomePage> {
                                   // 默认居中方式， 也就是如果 Positioned 水平left right 没填写的话，就默认水平居中，垂直 top bottom  没填写的话，就默认垂直居中
                                   alignment: Alignment.center,
                                   children: [
-                                    Image.asset(
-                                      'assets/img/colorful/抽卡/Activity1.png',
-                                      width: 162.sp, // 注意卡1-2宽度不一样
-                                      height: 24.sp,
+                                    // 旋转图片
+                                    Transform.rotate(
+                                      angle: 0 * 3.14159, // 360度的弧度值
+                                      child: Image.asset(
+                                        'assets/img/colorful/抽卡/Activity1.png',
+                                        width: 160.r, // 注意卡1-2宽度不一样
+                                        height: 24.r,
+                                      ),
                                     ),
                                     Text(
                                       '活动一',
                                       style: TextStyle(
-                                        fontSize: 13.sp,
+                                        fontSize: 13.r,
                                         fontWeight: FontWeight.w800,
                                         color:
                                             const Color.fromRGBO(23, 27, 61, 1),
@@ -210,8 +395,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                 ),
                               ),
                               // 单纯占据高度
-                              const SizedBox(
-                                height: 12,
+                              SizedBox(
+                                height: 12.r,
                               ),
                               // 抽奖可点击区域
                               Stack(
@@ -219,7 +404,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 alignment: Alignment.center,
                                 children: [
                                   //////////////// 没中奖
-                                  1 == 2
+                                  1 == 1
                                       ? InkWell(
                                           // 点击效果的小部件，它在被点击时会有一个水波纹效果。
                                           onTap: () {
@@ -231,16 +416,25 @@ class _MyHomePageState extends State<MyHomePage> {
                                               // 背景
                                               Image.asset(
                                                 'assets/img/colorful/抽卡/抽卡2@3x.png',
-                                                width: 154.sp, // 注意卡1-2宽度不一样
-                                                height: 198.sp,
+                                                width: 154.r, // 注意卡1-2宽度不一样
+                                                height: 198.r,
                                               ),
-                                              // 抽奖按钮
+                                              // 马上抽奖 按钮
                                               Positioned(
-                                                bottom: 10.sp,
+                                                bottom: 10.r,
                                                 child: Image.asset(
                                                   'assets/img/colorful/抽卡/bt_lottery.png',
-                                                  width: 126.sp, // 注意卡1-2宽度不一样
-                                                  height: 46.sp,
+                                                  width: 126.r, // 注意卡1-2宽度不一样
+                                                  height: 46.r,
+                                                ),
+                                              ),
+                                              // 待解锁 按钮
+                                              Positioned(
+                                                bottom: 10.r,
+                                                child: Image.asset(
+                                                  'assets/img/colorful/抽卡/bt_lock.png',
+                                                  width: 126.r, // 注意卡1-2宽度不一样
+                                                  height: 46.r,
                                                 ),
                                               ),
                                             ],
@@ -259,8 +453,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                               // 背景
                                               Image.asset(
                                                 'assets/img/colorful/抽卡/抽卡2-中奖@3x.png',
-                                                width: 154.sp, // 注意卡1-2宽度不一样
-                                                height: 198.sp,
+                                                width: 154.r, // 注意卡1-2宽度不一样
+                                                height: 198.r,
                                               ),
                                               // // 中奖物品
                                               Positioned(
@@ -268,8 +462,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                                 // left: 0, // 不填写，默认居中
                                                 child: Image.network(
                                                   'https://resource.magfic.com/luckDraw/%E5%90%A7%E5%94%A7_1704858508000.png',
-                                                  width: 126.sp, // 注意卡1-2宽度不一样
-                                                  height: 126.sp,
+                                                  width: 126.r, // 注意卡1-2宽度不一样
+                                                  height: 126.r,
                                                 ),
                                               ),
                                             ],
@@ -280,15 +474,6 @@ class _MyHomePageState extends State<MyHomePage> {
                               // const DebugLookWidget(),
                             ],
                           ),
-                          // Column(
-                          //   children: [
-                          //     Image.asset(
-                          //       'assets/img/colorful/抽卡/Activity2.png',
-                          //       width: 156.sp, // 注意卡1-2宽度不一样
-                          //       height: 24.sp,
-                          //     )
-                          //   ],
-                          // ),
                           // 右---活动2
                         ],
                       ),
@@ -300,6 +485,66 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class DialogTextTip extends StatelessWidget {
+  const DialogTextTip({
+    super.key,
+    required this.title,
+    required this.c1,
+    required this.c2,
+    required this.c3,
+  });
+  final String title;
+  final String c1;
+  final String c2;
+  final String c3;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start, // 水平偏左
+      children: [
+        Text(
+          // '第一步',
+          title,
+          style: TextStyle(
+            fontSize: 16.sp,
+            fontWeight: FontWeight.bold,
+            color: const Color.fromRGBO(23, 27, 61, 1),
+          ),
+        ),
+
+        // 单纯占据高度
+        SizedBox(
+          height: 6.r,
+        ),
+        RichText(
+          text: TextSpan(
+            // text: '创建',
+            text: c1, // '创建',
+            style: TextStyle(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w400,
+              color: const Color.fromRGBO(23, 27, 61, 1),
+            ),
+            children: <TextSpan>[
+              TextSpan(
+                text: c2, //'自定义主题，',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  inherit: true, // 继承其父级小部件的样式属性，包括颜色。
+                ),
+              ),
+              TextSpan(
+                text: c3, // ' 并将主题安装到桌面!'
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
