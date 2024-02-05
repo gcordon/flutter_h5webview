@@ -1,13 +1,96 @@
+import 'dart:developer';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart'; // https://github.com/nslogx/flutter_easyloading/blob/develop/README-zh_CN.md
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:logger/logger.dart'; // https://github.com/nslogx/flutter_easyloading/blob/develop/README-zh_CN.md
 
-void main() {
+import 'package:path_provider/path_provider.dart';
+
+Future<void> saveLoggerToFile() async {
+  // 获取应用程序的文档目录路径
+  var dir = await getApplicationDocumentsDirectory();
+  var logFile = File(
+    '${dir.path}/1707121290531.log',
+  );
+  var msg = 'linlin';
+  await logFile.writeAsString(msg);
+
+  print('文档目录路径：${dir.path}');
+}
+
+class DeveloperConsoleOutput extends LogOutput {
+  @override
+  void output(OutputEvent event) {
+    final StringBuffer buffer = StringBuffer();
+    event.lines.forEach(buffer.writeln);
+    log(buffer.toString());
+  }
+}
+
+var logger = Logger(
+  printer: PrettyPrinter(
+    // methodCount: 2, //要显示的方法调用数
+    methodCount: 0, //要显示的方法调用数
+    errorMethodCount: 8, //如果提供了stacktrace,方法调用的次数
+    lineLength: 120, //输出宽度
+    colors: true, //彩色的日志消息
+    printEmojis: true, //为每条日志消息打印一个emoji
+    printTime: false, //每个日志打印包含一个时间戳
+  ),
+  output: MultiOutput([
+    //  处理 ios 终端输出乱码问题
+    // https://github.com/flutter/flutter/issues/64491
+    // I have a file output here
+    DeveloperConsoleOutput(),
+  ]),
+);
+// 自定义 loading toast widget 样式
+void customSetupEasyLoading() {
+  // 因为 EasyLoading 是一个全局单例, 所以你可以在任意一个地方自定义它的样式:
+  EasyLoading.instance
+    ..displayDuration = const Duration(milliseconds: 1500)
+    ..indicatorType = EasyLoadingIndicatorType.fadingCircle
+    ..loadingStyle = EasyLoadingStyle.dark
+    ..indicatorSize = 45.0
+    ..radius = 10.0
+    ..progressColor = Colors.yellow
+    ..backgroundColor = Colors.green
+    ..indicatorColor = Colors.yellow
+    ..textColor = Colors.yellow
+    ..maskColor = Colors.blue.withOpacity(0.5)
+    ..userInteractions = true
+    ..dismissOnTap = false;
+  // ..customAnimation = CustomAnimation();
+}
+
+// app 初始化需要做的事情
+void setupAppInit() {
+  customSetupEasyLoading();
+
+  // logger.d('debug message');
+  // logger.i('info message');
+  // logger.w('warning message');
+  var message = '123';
+  // logger.e('error message');
+  // logger.d("${DateTime.now().toString()}\n$message");
+}
+
+void main() async {
+  // 初始化应用程序
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // await saveLoggerToFile();
+  setupAppInit();
+
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
+  void initState() {}
 
   // This widget is the root of your application.
   @override
@@ -56,22 +139,6 @@ class _MyHomePageState extends State<MyHomePage> {
   TextEditingController dialogTextFieldController = TextEditingController();
   @override
   void initState() {
-    // 因为 EasyLoading 是一个全局单例, 所以你可以在任意一个地方自定义它的样式:
-    EasyLoading.instance
-      ..displayDuration = const Duration(milliseconds: 1500)
-      ..indicatorType = EasyLoadingIndicatorType.fadingCircle
-      ..loadingStyle = EasyLoadingStyle.dark
-      ..indicatorSize = 45.0
-      ..radius = 10.0
-      ..progressColor = Colors.yellow
-      ..backgroundColor = Colors.green
-      ..indicatorColor = Colors.yellow
-      ..textColor = Colors.yellow
-      ..maskColor = Colors.blue.withOpacity(0.5)
-      ..userInteractions = true
-      ..dismissOnTap = false;
-    // ..customAnimation = CustomAnimation();
-
     EasyLoading.showSuccess('Great Success!');
 
     super.initState();
@@ -278,9 +345,7 @@ class _MyHomePageState extends State<MyHomePage> {
           InkWell(
             // 点击效果的小部件，它在被点击时会有一个水波纹效果。
             onTap: () {
-              // 点击回调函数
-              // 在这里执行您希望触发的操作
-              print('点击我的奖品');
+              logger.w("点击我的奖品");
             },
             child: Container(
               width: 96,
