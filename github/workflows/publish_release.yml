@@ -1,0 +1,45 @@
+name: app-build-action
+#推送Tag时触发
+on:
+  push:
+    tags:
+      - "*"
+jobs:
+  build-mac-ios-android:
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    steps:
+      #签出代码 
+      - uses: actions/checkout@v2
+        with:
+          ref: main
+      #设置JAVA环境
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: "12.x"
+          cache: 'gradle'
+      #设置Flutter
+      - name: Flutter action
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.16.9'
+          cache: true 
+      #更新Flutter的packages
+      - name: Flutter update packages
+        run: flutter update-packages --force-upgrade
+      - name: Restore packages
+        run: flutter pub get
+      #打包APK
+      - name: Build APK
+        run: flutter build apk --release
+      #上传APK至Artifacts
+      - name: Upload APK to Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-release.apk
+          path: |
+            build/app/outputs/flutter-apk/app-release.apk
+      #完成
+      - run: echo "🍏 This job's status is ${{ job.status }}."
