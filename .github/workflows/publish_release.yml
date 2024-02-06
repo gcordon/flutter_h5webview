@@ -41,5 +41,11 @@ jobs:
           name: app-release.apk
           path: |
             build/app/outputs/flutter-apk/app-release.apk
+      # 发布到 Release
+      - name: Release apk
+        uses: ncipollo/release-action@v1.5.0
+        with:
+          artifacts: "build/app/outputs/apk/release/*.apk"
+          token: ${{ secrets.FLUTTER_ACTION }}
       #完成
       - run: echo "🍏 This job's status is ${{ job.status }}."
