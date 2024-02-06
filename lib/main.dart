@@ -1,51 +1,29 @@
-import 'dart:developer';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:logger/logger.dart'; // https://github.com/nslogx/flutter_easyloading/blob/develop/README-zh_CN.md
+import 'package:get/get.dart';
+import 'package:gua_flutter_h5webview/views/H5Page.dart';
+import 'package:permission_handler/permission_handler.dart';
 
-import 'package:path_provider/path_provider.dart';
+import 'utils/Log.dart';
 
-Future<void> saveLoggerToFile() async {
-  // 获取应用程序的文档目录路径
-  var dir = await getApplicationDocumentsDirectory();
-  var logFile = File(
-    '${dir.path}/1707121290531.log',
-  );
-  var msg = 'linlin';
-  await logFile.writeAsString(msg);
+void main() async {
+  // 初始化应用程序
+  // 下面两个函数的配套使用的
+  WidgetsFlutterBinding.ensureInitialized();
+  // await saveLoggerToFile();
 
-  print('文档目录路径：${dir.path}');
+  // var p = await Permission.camera.request();
+  // print('得到相机权限了吗');
+  // print(p);
+  // await Permission.microphone.request(); // if you need microphone permission
+
+  setupAppInit();
+
+  runApp(const MyApp());
 }
 
-class DeveloperConsoleOutput extends LogOutput {
-  @override
-  void output(OutputEvent event) {
-    final StringBuffer buffer = StringBuffer();
-    event.lines.forEach(buffer.writeln);
-    log(buffer.toString());
-  }
-}
-
-var logger = Logger(
-  printer: PrettyPrinter(
-    // methodCount: 2, //要显示的方法调用数
-    methodCount: 0, //要显示的方法调用数
-    errorMethodCount: 8, //如果提供了stacktrace,方法调用的次数
-    lineLength: 120, //输出宽度
-    colors: true, //彩色的日志消息
-    printEmojis: true, //为每条日志消息打印一个emoji
-    printTime: false, //每个日志打印包含一个时间戳
-  ),
-  output: MultiOutput([
-    //  处理 ios 终端输出乱码问题
-    // https://github.com/flutter/flutter/issues/64491
-    // I have a file output here
-    DeveloperConsoleOutput(),
-  ]),
-);
 // 自定义 loading toast widget 样式
 void customSetupEasyLoading() {
   // 因为 EasyLoading 是一个全局单例, 所以你可以在任意一个地方自定义它的样式:
@@ -68,23 +46,6 @@ void customSetupEasyLoading() {
 // app 初始化需要做的事情
 void setupAppInit() {
   customSetupEasyLoading();
-
-  // logger.d('debug message');
-  // logger.i('info message');
-  // logger.w('warning message');
-  var message = '123';
-  // logger.e('error message');
-  // logger.d("${DateTime.now().toString()}\n$message");
-}
-
-void main() async {
-  // 初始化应用程序
-  WidgetsFlutterBinding.ensureInitialized();
-
-  // await saveLoggerToFile();
-  setupAppInit();
-
-  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -95,11 +56,12 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    // TODO: 没效果~~但是先留着后面可能就有效果了
-    // SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    //   statusBarColor: Colors.transparent, // 设置状态栏透明
-    //   systemNavigationBarColor: Colors.transparent, // 设置底部导航栏透明
-    // ));
+    //设置状态栏为透明
+    // SystemUiOverlayStyle systemUiOverlayStyle = const SystemUiOverlayStyle(
+    //   statusBarColor: Colors.transparent,
+    //   statusBarIconBrightness: Brightness.dark,
+    // );
+    // SystemChrome.setSystemUIOverlayStyle(systemUiOverlayStyle);
 
     return ScreenUtilInit(
       designSize: const Size(
@@ -109,7 +71,16 @@ class MyApp extends StatelessWidget {
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {
-        return MaterialApp(
+        return GetMaterialApp(
+          initialRoute: '/',
+          // initialRoute: '/h5-page',
+          getPages: [
+            GetPage(name: '/', page: () => MyHomePage(title: '')),
+            GetPage(name: '/h5-page', page: () => H5Page()),
+          ],
+          // 路由中间件
+          // navigatorObservers: [],
+
           debugShowCheckedModeBanner: false,
           title: 'First Method',
           // You can use the library anywhere in the app even in theme
@@ -139,165 +110,167 @@ class _MyHomePageState extends State<MyHomePage> {
   TextEditingController dialogTextFieldController = TextEditingController();
   @override
   void initState() {
-    EasyLoading.showSuccess('Great Success!');
-
+    // EasyLoading.showSuccess('Great Success!');
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return Stack(children: [
-            AlertDialog(
-              backgroundColor: const Color.fromARGB(255, 250, 250, 250),
-              alignment: Alignment.topCenter,
-              // 最外层间距
-              insetPadding:
-                  // EdgeInsets.symmetric(horizontal: 16.r, vertical: 137.r),
-                  // EdgeInsets.symmetric(horizontal: 16.r, ),
-                  EdgeInsets.only(
-                left: 16.r,
-                right: 16.r,
-                top: 137.r,
-                bottom: 0.r,
-              ),
-              // 圆角
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30.r),
-              ),
-              titlePadding:
-                  EdgeInsets.symmetric(horizontal: 16.r, vertical: 30.r),
-              title: const Text('提交作品链接\n获得抽奖机会 '),
-              titleTextStyle: TextStyle(
-                fontSize: 28.sp,
-                fontWeight: FontWeight.bold,
-                color: const Color.fromRGBO(23, 27, 61, 1),
-              ),
 
-              // 主内容间距
-              contentPadding: EdgeInsets.symmetric(
-                vertical: 0.r,
-                horizontal: 24.r,
-              ),
-              contentTextStyle: TextStyle(
-                color: const Color.fromRGBO(23, 27, 61, 1),
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w400,
-              ),
-              // 主内容
-              content: Container(
-                // constraints: const BoxConstraints(minHeight: 200),
-                child: SingleChildScrollView(
-                  child: SizedBox(
-                    width: double.maxFinite, // 将内容的宽度设置为最大
-                    // height: double.maxFinite, // 将内容的宽度设置为最大
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start, // 水平偏左
-                      // mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const DialogTextTip(
-                          title: '第一步',
-                          c1: '创建',
-                          c2: '自定义主题',
-                          c3: '，并将主题安装到桌面',
-                        ),
-                        SizedBox(
-                          height: 18.r,
-                        ),
-                        const DialogTextTip(
-                          title: '第二步',
-                          c1: '截图或者路平发布',
-                          c2: '小红书',
-                          c3: '后,讲作品链接粘贴到下方并点击提交。',
-                        ),
-                        SizedBox(
-                          height: 42.r,
-                        ),
-                        // 输入框
-                        TextField(
-                          controller: dialogTextFieldController, // 控制器，获取输入的值
-                          autofocus: false,
-                          enableSuggestions: false, // 输入建议
-                          // onChanged
-                          // onSubmitted
-                          // 内容样式
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w400,
-                          ),
-                          decoration: InputDecoration(
-                            // labelText: '请输入发布的作品链接',
-                            labelStyle: const TextStyle(
-                              color: Color(0xFF2E2E2E),
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12.r),
-                              borderSide: BorderSide.none, // 不要边框
-                            ),
-                            filled: true, // 如果要设置背景这个要设置为true
-                            fillColor: Colors.black12, // 背景颜色
-                            //  内容距离外部
-                            contentPadding: EdgeInsets.symmetric(
-                              vertical: 14.r, // 上下距离
-                              horizontal: 16.r, // 左右距离
-                            ),
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              actions: [
-                // FilledButton(
-                //   onPressed: () {
-                //     Navigator.of(context).pop();
-                //   },
-                //   child: const Text('OK'),
-                // ),
-                GestureDetector(
-                  onTap: () {
-                    print('点击提交链接');
-                  },
-                  child: Container(
-                    width: 217.sp,
-                    height: 55.sp,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [
-                          Color.fromRGBO(255, 62, 0, 1),
-                          Color.fromRGBO(255, 93, 175, 1),
-                        ], // 渐变色的颜色列表
-                        begin: Alignment.centerLeft, // 渐变的起始位置
-                        end: Alignment.centerRight, // 渐变的结束位置
-                      ),
-                      border:
-                          Border.all(color: Colors.transparent), // 去除默认div边框
-                      borderRadius: const BorderRadius.all(
-                        Radius.circular(27.0),
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        '提交',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20.sp,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-              actionsAlignment: MainAxisAlignment.center,
-              actionsPadding:
-                  EdgeInsets.symmetric(horizontal: 0.r, vertical: 34.r),
-            ),
-          ]);
-        },
-      );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // OpenLInkDialog();
     });
+  }
+
+  Future<dynamic> OpenLInkDialog() {
+    return Get.dialog(
+      Stack(
+        children: [
+          AlertDialog(
+            backgroundColor: const Color.fromARGB(255, 250, 250, 250),
+            alignment: Alignment.topCenter,
+            // 最外层间距
+            insetPadding:
+                // EdgeInsets.symmetric(horizontal: 16.r, vertical: 137.r),
+                // EdgeInsets.symmetric(horizontal: 16.r, ),
+                EdgeInsets.only(
+              left: 16.r,
+              right: 16.r,
+              top: 137.r,
+              bottom: 0.r,
+            ),
+            // 圆角
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30.r),
+            ),
+            titlePadding:
+                EdgeInsets.symmetric(horizontal: 16.r, vertical: 30.r),
+            title: const Text('提交作品链接\n获得抽奖机会 '),
+            titleTextStyle: TextStyle(
+              fontSize: 28.sp,
+              fontWeight: FontWeight.bold,
+              color: const Color.fromRGBO(23, 27, 61, 1),
+            ),
+
+            // 主内容间距
+            contentPadding: EdgeInsets.symmetric(
+              vertical: 0.r,
+              horizontal: 24.r,
+            ),
+            contentTextStyle: TextStyle(
+              color: const Color.fromRGBO(23, 27, 61, 1),
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w400,
+            ),
+            // 主内容
+            content: Container(
+              // constraints: const BoxConstraints(minHeight: 200),
+              child: SingleChildScrollView(
+                child: SizedBox(
+                  width: double.maxFinite, // 将内容的宽度设置为最大
+                  // height: double.maxFinite, // 将内容的宽度设置为最大
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start, // 水平偏左
+                    // mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const DialogTextTip(
+                        title: '第一步',
+                        c1: '创建',
+                        c2: '自定义主题',
+                        c3: '，并将主题安装到桌面',
+                      ),
+                      SizedBox(
+                        height: 18.r,
+                      ),
+                      const DialogTextTip(
+                        title: '第二步',
+                        c1: '截图或者路平发布',
+                        c2: '小红书',
+                        c3: '后,讲作品链接粘贴到下方并点击提交。',
+                      ),
+                      SizedBox(
+                        height: 42.r,
+                      ),
+                      // 输入框
+                      TextField(
+                        controller: dialogTextFieldController, // 控制器，获取输入的值
+                        autofocus: false,
+                        enableSuggestions: false, // 输入建议
+                        // onChanged
+                        // onSubmitted
+                        // 内容样式
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w400,
+                        ),
+                        decoration: InputDecoration(
+                          // labelText: '请输入发布的作品链接',
+                          labelStyle: const TextStyle(
+                            color: Color(0xFF2E2E2E),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                            borderSide: BorderSide.none, // 不要边框
+                          ),
+                          filled: true, // 如果要设置背景这个要设置为true
+                          fillColor: Colors.black12, // 背景颜色
+                          //  内容距离外部
+                          contentPadding: EdgeInsets.symmetric(
+                            vertical: 14.r, // 上下距离
+                            horizontal: 16.r, // 左右距离
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            actions: [
+              // FilledButton(
+              //   onPressed: () {
+              //     Navigator.of(context).pop();
+              //   },
+              //   child: const Text('OK'),
+              // ),
+              GestureDetector(
+                onTap: () {
+                  print('点击提交链接');
+                },
+                child: Container(
+                  width: 217.sp,
+                  height: 55.sp,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [
+                        Color.fromRGBO(255, 62, 0, 1),
+                        Color.fromRGBO(255, 93, 175, 1),
+                      ], // 渐变色的颜色列表
+                      begin: Alignment.centerLeft, // 渐变的起始位置
+                      end: Alignment.centerRight, // 渐变的结束位置
+                    ),
+                    border: Border.all(color: Colors.transparent), // 去除默认div边框
+                    borderRadius: const BorderRadius.all(
+                      Radius.circular(27.0),
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      '提交',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20.sp,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+            actionsAlignment: MainAxisAlignment.center,
+            actionsPadding:
+                EdgeInsets.symmetric(horizontal: 0.r, vertical: 34.r),
+          ),
+        ],
+      ),
+    );
   }
 
   int counter = 0;
@@ -345,7 +318,8 @@ class _MyHomePageState extends State<MyHomePage> {
           InkWell(
             // 点击效果的小部件，它在被点击时会有一个水波纹效果。
             onTap: () {
-              logger.w("点击我的奖品");
+              Log.f("点击我的奖品");
+              Get.toNamed("/h5-page");
             },
             child: Container(
               width: 96,
