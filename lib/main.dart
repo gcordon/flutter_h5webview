@@ -8,14 +8,38 @@ import 'package:permission_handler/permission_handler.dart';
 
 import 'utils/Log.dart';
 
+class SignInterface {
+  // 单例
+  // 单例是一种设计模式，旨在确保一个类只有一个实例，并提供一个全局访问点
+
+  // 首先，JCensus类的构造函数被定义为私有的，这意味着它不能从类的外部进行实例化。这是为了防止其他代码直接创建 JCensus 的实例，从而确保只能通过单例模式获取实例。
+  // 定义为 final，表示一旦被赋值后就不可更改
+  static final SignInterface _instance = SignInterface._internal();
+  // factory === 工厂构造函数
+  factory SignInterface() {
+    // 这里的工厂构造函数返回的是 _instance，因此每次调用 JCensus() 都会返回同一个实例。
+    return _instance;
+  }
+  SignInterface._internal() {
+    __init();
+  }
+  __init() {
+    // 初始化
+    Log.i('单例初始化');
+  }
+}
+
 void main() async {
   // 初始化应用程序
   // 下面两个函数的配套使用的
-  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding
+      .ensureInitialized(); // webview用到的 https://inappwebview.dev/docs/intro
   // await saveLoggerToFile();
 
-  // var p = await Permission.camera.request();
-  // print('得到相机权限了吗');
+  var p = await Permission.camera.request();
+  Log.i('得到相机权限了吗');
+  Log.logPrint(p);
+  Log.i('得到相机权限了吗2');
   // print(p);
   // await Permission.microphone.request(); // if you need microphone permission
 
@@ -72,8 +96,8 @@ class MyApp extends StatelessWidget {
       splitScreenMode: true,
       builder: (context, child) {
         return GetMaterialApp(
-          initialRoute: '/',
-          // initialRoute: '/h5-page',
+          // initialRoute: '/',
+          initialRoute: '/h5-page',
           getPages: [
             GetPage(name: '/', page: () => MyHomePage(title: '')),
             GetPage(name: '/h5-page', page: () => H5Page()),

@@ -1,9 +1,19 @@
 import 'dart:developer';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
 import 'package:path_provider/path_provider.dart';
 
 class Log {
+  static void logPrint(dynamic obj) {
+    Log.e(obj.toString());
+    // if (obj is Error) {
+    // } else if (kDebugMode) {
+    //   // 如果应用程序是在调试模式下编译的
+    //   print(obj);
+    // }
+  }
+
   static t(String message) {
     logger.t("${DateTime.now().toString()}\n$message");
   }

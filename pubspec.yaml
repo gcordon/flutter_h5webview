@@ -12,7 +12,7 @@ dependencies:
   cupertino_icons: 1.0.2 # 图标 iOS 风格
 
   # 状态
-  get: 4.6.6 #状态管理
+  get: 4.6.6 #状态管理 https://github.com/jonataslaw/getx/blob/master/documentation/zh_CN/route_management.md#%E8%B7%AF%E7%94%B1%E7%AE%A1%E7%90%86
 
   # 框架、工具
   flutter_screenutil: 5.9.0 # 屏幕适配 https://github.com/OpenFlutter/flutter_screenutil/blob/master/README_CN.md
@@ -20,7 +20,7 @@ dependencies:
   
   # Widget
   flutter_easyloading: 3.0.5 # loading/toast https://github.com/nslogx/flutter_easyloading/blob/develop/README-zh_CN.md
-  flutter_inappwebview: 6.0.0 # webview flutter 中加载网页 https://inappwebview.dev/
+  flutter_inappwebview: 6.0.0 # webview flutter 中加载网页 https://inappwebview.dev/docs/intro https://inappwebview.dev/
 
   #系统交互
   path_provider: 2.0.13 # 获取路径相关
